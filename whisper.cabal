@@ -1,11 +1,15 @@
 cabal-version: 1.12
 
-name:           blog-whisper
+-- This file has been generated from package.yaml by hpack version 0.35.1.
+--
+-- see: https://github.com/sol/hpack
+
+name:           whisper
 version:        0.1.0.0
 description:    A Simple Lisp Interpreter in Haskell
-homepage:       https://github.com/pacokwon/whisper
+homepage:       https://github.com/pacokwon/whisper#readme
 bug-reports:    https://github.com/pacokwon/whisper/issues
-author:         Paco Kwon
+author:         pacokwon
 maintainer:     haechank@gmail.com
 copyright:      2023 Paco Kwon
 license:        MIT
@@ -23,7 +27,7 @@ library
       Eval
       Parser
   other-modules:
-      Paths_blog_whisper
+      Paths_whisper
   hs-source-dirs:
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
@@ -38,45 +42,45 @@ executable alt-exe
   main-is: alt.hs
   other-modules:
       Main
-      Paths_blog_whisper
+      Paths_whisper
   hs-source-dirs:
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , blog-whisper
     , containers
     , megaparsec >=9.4
     , text >=2.0
+    , whisper
   default-language: Haskell2010
 
-executable blog-whisper-exe
+executable whisper-exe
   main-is: Main.hs
   other-modules:
-      Paths_blog_whisper
+      Paths_whisper
   hs-source-dirs:
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , blog-whisper
     , containers
     , megaparsec >=9.4
     , text >=2.0
+    , whisper
   default-language: Haskell2010
 
-test-suite blog-whisper-test
+test-suite whisper-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      Paths_blog_whisper
+      Paths_whisper
   hs-source-dirs:
       test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , blog-whisper
     , containers
     , megaparsec >=9.4
     , text >=2.0
+    , whisper
   default-language: Haskell2010

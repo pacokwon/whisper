@@ -1,4 +1,4 @@
-name:                blog-whisper
+name:                whisper
 version:             0.1.0.0
 github:              "pacokwon/whisper"
 license:             MIT
@@ -32,7 +32,7 @@ library:
   source-dirs: src
 
 executables:
-  blog-whisper-exe:
+  whisper-exe:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
@@ -40,7 +40,7 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - blog-whisper
+    - whisper
   alt-exe:
     main:                alt.hs
     source-dirs:         app
@@ -49,10 +49,10 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - blog-whisper
+    - whisper
 
 tests:
-  blog-whisper-test:
+  whisper-test:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:
@@ -60,4 +60,4 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - blog-whisper
+    - whisper
