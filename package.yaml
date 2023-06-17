@@ -1,0 +1,63 @@
+name:                blog-whisper
+version:             0.1.0.0
+github:              "pacokwon/whisper"
+license:             MIT
+author:              "pacokwon"
+maintainer:          "haechank@gmail.com"
+copyright:           "2023 Paco Kwon"
+
+extra-source-files:
+- README.md
+
+description: A Simple Lisp Interpreter in Haskell
+
+dependencies:
+- base >= 4.7 && < 5
+- megaparsec >= 9.4
+- text >= 2.0
+- containers
+
+ghc-options:
+- -Wall
+- -Wcompat
+- -Widentities
+- -Wincomplete-record-updates
+- -Wincomplete-uni-patterns
+- -Wmissing-export-lists
+- -Wmissing-home-modules
+- -Wpartial-fields
+- -Wredundant-constraints
+
+library:
+  source-dirs: src
+
+executables:
+  blog-whisper-exe:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - blog-whisper
+  alt-exe:
+    main:                alt.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - blog-whisper
+
+tests:
+  blog-whisper-test:
+    main:                Spec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - blog-whisper

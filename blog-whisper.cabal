@@ -1,0 +1,82 @@
+cabal-version: 1.12
+
+name:           blog-whisper
+version:        0.1.0.0
+description:    A Simple Lisp Interpreter in Haskell
+homepage:       https://github.com/pacokwon/whisper
+bug-reports:    https://github.com/pacokwon/whisper/issues
+author:         Paco Kwon
+maintainer:     haechank@gmail.com
+copyright:      2023 Paco Kwon
+license:        MIT
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+
+source-repository head
+  type: git
+  location: https://github.com/pacokwon/whisper
+
+library
+  exposed-modules:
+      Eval
+      Parser
+  other-modules:
+      Paths_blog_whisper
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  build-depends:
+      base >=4.7 && <5
+    , containers
+    , megaparsec >=9.4
+    , text >=2.0
+  default-language: Haskell2010
+
+executable alt-exe
+  main-is: alt.hs
+  other-modules:
+      Main
+      Paths_blog_whisper
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , blog-whisper
+    , containers
+    , megaparsec >=9.4
+    , text >=2.0
+  default-language: Haskell2010
+
+executable blog-whisper-exe
+  main-is: Main.hs
+  other-modules:
+      Paths_blog_whisper
+  hs-source-dirs:
+      app
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , blog-whisper
+    , containers
+    , megaparsec >=9.4
+    , text >=2.0
+  default-language: Haskell2010
+
+test-suite blog-whisper-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_blog_whisper
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , blog-whisper
+    , containers
+    , megaparsec >=9.4
+    , text >=2.0
+  default-language: Haskell2010
