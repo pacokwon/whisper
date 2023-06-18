@@ -1,9 +1,9 @@
-module Parser (Sexpr (..), number, ident, paren, sexpr) where
+module Parser (Sexpr (..), number, ident, paren, sexpr, parse) where
 
 import qualified Data.Set as Set
 import Data.Text (Text)
 import Data.Void (Void)
-import Text.Megaparsec (Parsec, many, satisfy, some, (<|>))
+import Text.Megaparsec (Parsec, many, runParser, satisfy, some, (<|>))
 import Text.Megaparsec.Char (alphaNumChar, char, letterChar, space)
 import qualified Text.Megaparsec.Char.Lexer as L
 
@@ -39,3 +39,8 @@ paren = Paren <$> lexeme (char '(' *> some sexpr <* char ')')
 
 sexpr :: Parser Sexpr
 sexpr = paren <|> number <|> ident
+
+parse :: Text -> Sexpr
+parse input = case runParser sexpr "" input of
+  Right s -> s
+  Left e -> error . show $ e
