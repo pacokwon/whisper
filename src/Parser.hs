@@ -35,15 +35,7 @@ ident = Ident <$> lexeme p
     p = (:) <$> first <*> rest
 
 paren :: Parser Sexpr
--- paren = Paren <$> lexeme (char '(' *> some sexpr <* char ')')
-paren =
-  lexeme
-    ( do
-        _ <- char '('
-        ss <- some sexpr
-        _ <- char ')'
-        return $ Paren ss
-    )
+paren = Paren <$> lexeme (char '(' *> some sexpr <* char ')')
 
 sexpr :: Parser Sexpr
 sexpr = paren <|> number <|> ident
