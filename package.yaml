@@ -16,6 +16,7 @@ dependencies:
 - megaparsec >= 9.4
 - text >= 2.0
 - containers
+- mtl
 
 ghc-options:
 - -Wall

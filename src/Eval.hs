@@ -1,29 +1,65 @@
-module Eval (eval) where
+module Eval (evalSexpr, Env) where
 
+import Control.Monad.State (State, get, gets, modify, put)
+import Data.Map (Map)
+-- import qualified Data.Map as Map
+import qualified Data.Map as Map
 import Parser (Sexpr (..))
 
-data Value = NumV Int
-           | Func ([Value] -> Value)
+data Value
+  = NumV Int
+  | Func ([Value] -> Value)
+  | Unit
+  | Error String
+
+type Env = Map String Value
 
 instance Show Value where
-    show (NumV n) = show n
-    show (Func _) = "<function>"
+  show (NumV n) = show n
+  show (Func _) = "<function>"
+  show Unit = "()"
+  show (Error msg) = msg
 
 getNum :: Value -> Int
 getNum (NumV n) = n
 getNum x = error $ "Value must be a NumV value. Got: " ++ show x
 
-eval :: Sexpr -> Value
-eval (Number n) = NumV n
-eval (Ident "+") = Func func
-    where
-        func = NumV . sum . map getNum
-eval (Ident "max") = Func func
-    where
-        func = NumV . maximum . map getNum
-eval (Ident x) = error $ "Unknown identifier " ++ x
-eval (Paren (x:xs)) = getFunc (eval x) (map eval xs)
-    where
-        getFunc (Func f) = f
-        getFunc v = error $ "The first element in a list must be a function. Got: " ++ show v
-eval (Paren []) = error "List must not be empty!"
+evalSexpr :: Sexpr -> State Env Value
+evalSexpr (Number n) = return $ NumV n
+evalSexpr (Ident x) = do
+  val <- gets $ Map.lookup x
+  return $ case val of
+    Just v -> v
+    Nothing -> Error $ "Variable named \"" ++ x ++ "\" does not exist!"
+evalSexpr (Paren []) = return $ Error "List must not be empty!"
+evalSexpr (Paren xs) = applyFunction xs
+
+applyFunction :: [Sexpr] -> State Env Value
+applyFunction ((Ident "define") : args) = applyDefine args
+applyFunction ((Ident "let") : args) = applyLet args
+applyFunction ((Ident "+") : args) = fmap (NumV . sum . map getNum) . mapM evalSexpr $ args
+applyFunction ((Ident "*") : args) = fmap (NumV . product . map getNum) . mapM evalSexpr $ args
+applyFunction _ = return $ Error "Not Implemented"
+
+applyDefine :: [Sexpr] -> State Env Value
+applyDefine ((Ident name) : expr : _) = do
+  val <- evalSexpr expr
+  modify (Map.insert name val)
+  return Unit
+applyDefine _ = return $ Error "Not Implemented"
+
+applyLet :: [Sexpr] -> State Env Value
+applyLet (decls:expr:_) = do
+    ogEnv <- get
+    extendWithDecls decls
+    val <- evalSexpr expr
+    put ogEnv
+    return val
+applyLet _ = return $ Error "Not Implemented"
+
+extendWithDecls :: Sexpr -> State Env ()
+extendWithDecls (Paren decls) = mapM_ extendWithDecl decls
+  where
+    extendWithDecl (Paren ((Ident name) : expr : _)) = do
+      val <- evalSexpr expr
+      modify (Map.insert name val)

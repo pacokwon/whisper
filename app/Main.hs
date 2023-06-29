@@ -3,19 +3,22 @@ module Main (main) where
 
 import Parser (Sexpr(..), parse)
 import System.IO (hFlush, stdout)
-import Eval (eval)
+import Eval (evalSexpr, Env)
 import qualified Data.Text.IO as TIO
+import qualified Data.Map as Map
+import Control.Monad.State (runState)
 
-repl :: IO ()
-repl = do
+repl :: Env -> IO ()
+repl env = do
     putStr ">> "
     hFlush stdout
     input <- TIO.getLine
     if input == "exit" then
         putStrLn "Bye!"
     else do
-        print . eval . parse $ input
-        repl
+        let (result, env') = flip runState env . evalSexpr . parse $ input
+        print result
+        repl env'
 
 main :: IO ()
-main = repl
+main = repl Map.empty
