@@ -17,6 +17,7 @@ dependencies:
 - text >= 2.0
 - containers
 - mtl
+- transformers
 
 ghc-options:
 - -Wall

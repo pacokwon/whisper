@@ -37,6 +37,7 @@ library
     , megaparsec >=9.4
     , mtl
     , text >=2.0
+    , transformers
   default-language: Haskell2010
 
 executable alt-exe
@@ -53,6 +54,7 @@ executable alt-exe
     , megaparsec >=9.4
     , mtl
     , text >=2.0
+    , transformers
     , whisper
   default-language: Haskell2010
 
@@ -69,6 +71,7 @@ executable whisper-exe
     , megaparsec >=9.4
     , mtl
     , text >=2.0
+    , transformers
     , whisper
   default-language: Haskell2010
 
@@ -86,5 +89,6 @@ test-suite whisper-test
     , megaparsec >=9.4
     , mtl
     , text >=2.0
+    , transformers
     , whisper
   default-language: Haskell2010
