@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Main (main) where
 
-import Parser (Sexpr(..), parse)
+import Parser (parse)
 import System.IO (hFlush, stdout)
 import Eval (evalSexpr, Env)
 import qualified Data.Text.IO as TIO
@@ -18,7 +18,7 @@ repl env = do
     else
         case flip runStateT env . evalSexpr . parse $ input of
             Left err -> print ("Error: " ++ err) >> repl env
-            Right ((result, env')) -> print result >> repl env'
+            Right (result, env') -> print result >> repl env'
 
 main :: IO ()
 main = repl Map.empty
