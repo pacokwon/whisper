@@ -9,6 +9,7 @@ import Parser (Sexpr (..))
 
 data Value
   = NumV Int
+  | BoolV Bool
   | NativeFunc ([Value] -> Value)
   | Func [String] Sexpr
   | Unit
@@ -19,6 +20,7 @@ type ExecState = StateT Env (Either String)
 
 instance Show Value where
   show (NumV n) = show n
+  show (BoolV b) = show b
   show (NativeFunc _) = "<function>"
   show (Func _args _) = "<function>"
   show Unit = "()"
@@ -26,6 +28,10 @@ instance Show Value where
 getNum :: Value -> Int
 getNum (NumV n) = n
 getNum x = error $ "Value must be a NumV value. Got: " ++ show x
+
+getBool :: Value -> Bool
+getBool (BoolV b) = b
+getBool x = error $ "Value must be a BoolV value. Got: " ++ show x
 
 evalSexpr :: Sexpr -> ExecState Value
 evalSexpr (Number n) = return $ NumV n
@@ -36,12 +42,30 @@ evalSexpr (Ident x) = do
     Nothing -> lift . Left $ "Variable named \"" ++ x ++ "\" does not exist!"
 evalSexpr (Paren []) = lift . Left $ "Parenthesized list must not be empty!"
 evalSexpr (Paren xs) = applyFunction xs
+evalSexpr (Boolean b) = return . BoolV $ b
 
 applyFunction :: [Sexpr] -> ExecState Value
 applyFunction ((Ident "define") : args) = applyDefine args
 applyFunction ((Ident "let") : args) = applyLet args
 applyFunction ((Ident "+") : args) = fmap (NumV . sum . map getNum) . mapM evalSexpr $ args
 applyFunction ((Ident "*") : args) = fmap (NumV . product . map getNum) . mapM evalSexpr $ args
+applyFunction ((Ident "&&") : args) = fmap (BoolV . all getBool) . mapM evalSexpr $ args
+applyFunction ((Ident "||") : args) = fmap (BoolV . any getBool) . mapM evalSexpr $ args
+applyFunction ((Ident "~") : arg : _) = fmap (BoolV . not . getBool) . evalSexpr $ arg
+applyFunction ((Ident "=") : arg1 : arg2 : _) = do
+    v1 <- evalSexpr arg1
+    v2 <- evalSexpr arg2
+    return . BoolV $ getNum v1 == getNum v2
+applyFunction ((Ident "<") : arg1 : arg2 : _) = do
+    v1 <- evalSexpr arg1
+    v2 <- evalSexpr arg2
+    return . BoolV $ getNum v1 < getNum v2
+applyFunction ((Ident "if") : cond : ifTrue : ifFalse : _) = do
+  cv <- evalSexpr cond
+  case cv of
+    BoolV True -> evalSexpr ifTrue
+    BoolV False -> evalSexpr ifFalse
+    _ -> lift . Left $ "Condition expression must be a boolean value!"
 applyFunction ((Ident name) : args) = do
     func <- gets (Map.lookup name)
     case func of
