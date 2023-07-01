@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Parser (Sexpr (..), number, ident, paren, sexpr, parse) where
+module Parser (Sexpr (..), sexpr, parse, parseProgram) where
 
 import Data.Functor (($>))
 import qualified Data.Set as Set
@@ -50,7 +50,15 @@ paren = Paren <$> lexeme (char '(' *> some sexpr <* char ')')
 sexpr :: Parser Sexpr
 sexpr = paren <|> number <|> boolean <|> ident
 
+sexprs :: Parser [Sexpr]
+sexprs = many sexpr
+
 parse :: Text -> Sexpr
 parse input = case runParser sexpr "" input of
+  Right s -> s
+  Left e -> error . show $ e
+
+parseProgram :: Text -> [Sexpr]
+parseProgram input = case runParser sexprs "" input of
   Right s -> s
   Left e -> error . show $ e

@@ -23,7 +23,7 @@ instance Show Value where
   show (BoolV b) = show b
   show (NativeFunc _) = "<function>"
   show (Func _args _) = "<function>"
-  show Unit = "()"
+  show Unit = ""
 
 getNum :: Value -> Int
 getNum (NumV n) = n
