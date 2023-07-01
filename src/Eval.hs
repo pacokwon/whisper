@@ -1,29 +1,64 @@
-module Eval (evalSexpr, Env) where
+module Eval (evalSexpr, Env, globalEnvironment) where
 
-import Control.Monad.State (StateT, get, gets, modify, put)
+import Control.Monad.State (get, gets, modify, put)
 import Control.Monad.Trans.Class (lift)
 import Data.Map (Map)
 -- import qualified Data.Map as Map
 import qualified Data.Map as Map
+import EvalTypes
 import Parser (Sexpr (..))
 
-data Value
-  = NumV Int
-  | BoolV Bool
-  | NativeFunc ([Value] -> Value)
-  | Func [String] Sexpr
-  | Unit
+globalEnvironment :: Env
+globalEnvironment =
+  Map.fromList
+    [ ("+", NativeFunc nativeSum),
+      ("*", NativeFunc nativeProduct),
+      ("&&", NativeFunc nativeLogicalAnd),
+      ("||", NativeFunc nativeLogicalOr),
+      ("~", NativeFunc nativeLogicalNot),
+      ("=", NativeFunc nativeEquals),
+      ("<", NativeFunc nativeLesserThan),
+      ("if", NativeFunc nativeIf)
+    ]
 
-type Env = Map String Value
+nativeSum :: [Sexpr] -> ExecState Value
+nativeSum = fmap (NumV . sum . map getNum) . mapM evalSexpr
 
-type ExecState = StateT Env (Either String)
+nativeProduct :: [Sexpr] -> ExecState Value
+nativeProduct = fmap (NumV . product . map getNum) . mapM evalSexpr
 
-instance Show Value where
-  show (NumV n) = show n
-  show (BoolV b) = show b
-  show (NativeFunc _) = "<function>"
-  show (Func _args _) = "<function>"
-  show Unit = ""
+nativeLogicalAnd :: [Sexpr] -> ExecState Value
+nativeLogicalAnd = fmap (BoolV . all getBool) . mapM evalSexpr
+
+nativeLogicalOr :: [Sexpr] -> ExecState Value
+nativeLogicalOr = fmap (BoolV . any getBool) . mapM evalSexpr
+
+nativeLogicalNot :: [Sexpr] -> ExecState Value
+nativeLogicalNot [] = lift . Left $ "~ function requires a single argument!"
+nativeLogicalNot args = fmap (BoolV . not . getBool) . evalSexpr . head $ args
+
+nativeEquals :: [Sexpr] -> ExecState Value
+nativeEquals [arg1, arg2] = do
+  v1 <- evalSexpr arg1
+  v2 <- evalSexpr arg2
+  return . BoolV $ getNum v1 == getNum v2
+nativeEquals _ = lift . Left $ "= function requires two arguments!"
+
+nativeLesserThan :: [Sexpr] -> ExecState Value
+nativeLesserThan [arg1, arg2] = do
+  v1 <- evalSexpr arg1
+  v2 <- evalSexpr arg2
+  return . BoolV $ getNum v1 < getNum v2
+nativeLesserThan _ = lift . Left $ "< function requires two arguments!"
+
+nativeIf :: [Sexpr] -> ExecState Value
+nativeIf [cond, ifTrue, ifFalse] = do
+  cv <- evalSexpr cond
+  case cv of
+    BoolV True -> evalSexpr ifTrue
+    BoolV False -> evalSexpr ifFalse
+    _ -> lift . Left $ "Condition expression must be a boolean value!"
+nativeIf _ = lift . Left $ "If function requires 3 arguments!"
 
 getNum :: Value -> Int
 getNum (NumV n) = n
@@ -47,41 +82,23 @@ evalSexpr (Boolean b) = return . BoolV $ b
 applyFunction :: [Sexpr] -> ExecState Value
 applyFunction ((Ident "define") : args) = applyDefine args
 applyFunction ((Ident "let") : args) = applyLet args
-applyFunction ((Ident "+") : args) = fmap (NumV . sum . map getNum) . mapM evalSexpr $ args
-applyFunction ((Ident "*") : args) = fmap (NumV . product . map getNum) . mapM evalSexpr $ args
-applyFunction ((Ident "&&") : args) = fmap (BoolV . all getBool) . mapM evalSexpr $ args
-applyFunction ((Ident "||") : args) = fmap (BoolV . any getBool) . mapM evalSexpr $ args
-applyFunction ((Ident "~") : arg : _) = fmap (BoolV . not . getBool) . evalSexpr $ arg
-applyFunction ((Ident "=") : arg1 : arg2 : _) = do
-    v1 <- evalSexpr arg1
-    v2 <- evalSexpr arg2
-    return . BoolV $ getNum v1 == getNum v2
-applyFunction ((Ident "<") : arg1 : arg2 : _) = do
-    v1 <- evalSexpr arg1
-    v2 <- evalSexpr arg2
-    return . BoolV $ getNum v1 < getNum v2
-applyFunction ((Ident "if") : cond : ifTrue : ifFalse : _) = do
-  cv <- evalSexpr cond
-  case cv of
-    BoolV True -> evalSexpr ifTrue
-    BoolV False -> evalSexpr ifFalse
-    _ -> lift . Left $ "Condition expression must be a boolean value!"
 applyFunction ((Ident name) : args) = do
-    func <- gets (Map.lookup name)
-    case func of
-        Nothing -> lift . Left $ "Function named \"" ++ name ++ "\" does not exist!"
-        Just (Func argNames body) -> do
-            argVals <- mapM evalSexpr args
-            if length argNames /= length argVals then
-                lift . Left $ "Function arity doesn't match! Arity is: " ++ (show . length $ argNames)
-            else do
-                ogEnv <- get
-                let newEnv = Map.union ogEnv $ Map.fromList (zip argNames argVals)
-                put newEnv
-                val <- evalSexpr body
-                put ogEnv
-                return val
-        Just _ -> lift . Left $ "\"" ++ name ++ "\" is not a function!"
+  func <- gets (Map.lookup name)
+  case func of
+    Nothing -> lift . Left $ "Function named \"" ++ name ++ "\" does not exist!"
+    Just (Func argNames body) -> do
+      argVals <- mapM evalSexpr args
+      if length argNames /= length argVals
+        then lift . Left $ "Function arity doesn't match! Arity is: " ++ (show . length $ argNames)
+        else do
+          ogEnv <- get
+          let newEnv = Map.union (Map.fromList (zip argNames argVals)) ogEnv
+          put newEnv
+          val <- evalSexpr body
+          put ogEnv
+          return val
+    Just (NativeFunc nfunc) -> nfunc args
+    _ -> lift . Left $ "\"" ++ name ++ "\" is not a function!"
 applyFunction _ = lift . Left $ "Invalid function application!"
 
 applyDefine :: [Sexpr] -> ExecState Value
