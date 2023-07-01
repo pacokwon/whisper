@@ -2,17 +2,20 @@ module Eval (evalSexpr, Env, globalEnvironment) where
 
 import Control.Monad.State (get, gets, modify, put)
 import Control.Monad.Trans.Class (lift)
-import Data.Map (Map)
 -- import qualified Data.Map as Map
 import qualified Data.Map as Map
 import EvalTypes
 import Parser (Sexpr (..))
+import Data.Foldable (Foldable(foldl'))
 
 globalEnvironment :: Env
 globalEnvironment =
   Map.fromList
     [ ("+", NativeFunc nativeSum),
+      ("-", NativeFunc nativeSubtract),
       ("*", NativeFunc nativeProduct),
+      ("/", NativeFunc nativeDivide),
+      ("%", NativeFunc nativeModulo),
       ("&&", NativeFunc nativeLogicalAnd),
       ("||", NativeFunc nativeLogicalOr),
       ("~", NativeFunc nativeLogicalNot),
@@ -24,8 +27,25 @@ globalEnvironment =
 nativeSum :: [Sexpr] -> ExecState Value
 nativeSum = fmap (NumV . sum . map getNum) . mapM evalSexpr
 
+nativeSubtract :: [Sexpr] -> ExecState Value
+nativeSubtract = fmap (NumV . foldl' (-) 0 . map getNum) . mapM evalSexpr
+
 nativeProduct :: [Sexpr] -> ExecState Value
 nativeProduct = fmap (NumV . product . map getNum) . mapM evalSexpr
+
+nativeDivide :: [Sexpr] -> ExecState Value
+nativeDivide [arg1, arg2] = do
+  v1 <- evalSexpr arg1
+  v2 <- evalSexpr arg2
+  return . NumV $ getNum v1 `div` getNum v2
+nativeDivide _ = lift . Left $ "/ function requires two arguments!"
+
+nativeModulo :: [Sexpr] -> ExecState Value
+nativeModulo [arg1, arg2] = do
+  v1 <- evalSexpr arg1
+  v2 <- evalSexpr arg2
+  return . NumV $ getNum v1 `mod` getNum v2
+nativeModulo _ = lift . Left $ "% function requires two arguments!"
 
 nativeLogicalAnd :: [Sexpr] -> ExecState Value
 nativeLogicalAnd = fmap (BoolV . all getBool) . mapM evalSexpr
