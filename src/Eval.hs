@@ -102,11 +102,10 @@ evalSexpr (Boolean b) = return . BoolV $ b
 applyFunction :: [Sexpr] -> ExecState Value
 applyFunction ((Ident "define") : args) = applyDefine args
 applyFunction ((Ident "let") : args) = applyLet args
-applyFunction ((Ident name) : args) = do
-  func <- gets (Map.lookup name)
+applyFunction (expr : args) = do
+  func <- evalSexpr expr
   case func of
-    Nothing -> lift . Left $ "Function named \"" ++ name ++ "\" does not exist!"
-    Just (Func argNames body) -> do
+    Func argNames body -> do
       argVals <- mapM evalSexpr args
       if length argNames /= length argVals
         then lift . Left $ "Function arity doesn't match! Arity is: " ++ (show . length $ argNames)
@@ -117,8 +116,8 @@ applyFunction ((Ident name) : args) = do
           val <- evalSexpr body
           put ogEnv
           return val
-    Just (NativeFunc nfunc) -> nfunc args
-    _ -> lift . Left $ "\"" ++ name ++ "\" is not a function!"
+    NativeFunc nfunc -> nfunc args
+    _ -> lift . Left $ "\"" ++ show func ++ "\" is not a function!"
 applyFunction _ = lift . Left $ "Invalid function application!"
 
 applyDefine :: [Sexpr] -> ExecState Value
