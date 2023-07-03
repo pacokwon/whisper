@@ -30,7 +30,7 @@ true
 `whisper` supports many features familiar to Lisp derivatives, including:
 
 <details>
-    <summary>Boolean Literals</summary>
+    <summary><strong>Boolean Literals</strong></summary>
 
 ```lisp
 true
@@ -46,7 +46,7 @@ false
 </details>
 
 <details>
-    <summary>Integer Literals</summary>
+    <summary><strong>Integer Literals</strong></summary>
 
 ```lisp
 42
@@ -63,7 +63,7 @@ Will print:
 </details>
 
 <details>
-    <summary>Native functions, such as `+`, `*`</summary>
+    <summary><strong>Native functions, such as `+`, `*`</strong></summary>
 
 ```lisp
 (+ 1 2 3 4 5)
@@ -78,7 +78,7 @@ Will print:
 </details>
 
 <details>
-    <summary>Conditionals</summary>
+    <summary><strong>Conditionals</strong></summary>
 
 ```lisp
 (if true 0 42)
@@ -93,7 +93,7 @@ Will print:
 </details>
 
 <details>
-    <summary>Define global variables and functions using `define`</summary>
+    <summary><strong>Define global variables and functions using `define`</strong></summary>
 
 ```lisp
 (define global 3)
@@ -113,7 +113,7 @@ Will print:
 </details>
 
 <details>
-    <summary>Define scope-local variables using `let`</summary>
+    <summary><strong>Define scope-local variables using `let`</strong></summary>
 
 ```lisp
 (define x 3)
@@ -130,7 +130,7 @@ Will print:
 </details>
 
 <details>
-    <summary>Passing functions as values</summary>
+    <summary><strong>Passing functions as values</strong></summary>
 
 ```lisp
 (define x +)
@@ -147,7 +147,7 @@ Will print:
 </details>
 
 <details>
-    <summary>Recursion</summary>
+    <summary><strong>Recursion</strong></summary>
 
 ```lisp
 (define (is-prime-helper n x)
@@ -174,7 +174,7 @@ true
 ## Running the Interpreter
 
 ### REPL
-You can simply spin up an interactive REPL with [`stack`](https://docs.haskellstack.org/en/stable/).
+You can easily spin up an interactive REPL with [`stack`](https://docs.haskellstack.org/en/stable/).
 
 ```bash
 $ stack run whisper-exe
@@ -202,3 +202,10 @@ true
 >>> (is-prime 7)
 true
 ```
+
+## Implementation Blog
+There are 3 blog posts about this project written during development.
+
+* [Part1: Parsing](https://www.pacokwon.org/posts/20230616-haskell-lisp-parsing)
+* [Part2: Evaluation](https://www.pacokwon.org/posts/20230618-haskell-lisp-eval)
+* [Part3: Extensions](https://www.pacokwon.org/posts/20230702-haskell-lisp-extensions)
